@@ -1,7 +1,5 @@
-```typescript
-import { NextResponse, NextRequest } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 export const dynamic = 'force-dynamic'
-import { prisma } from '@/lib/prisma'
 
 /**
  * POST /api/auth/logout
