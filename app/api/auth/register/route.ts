@@ -4,6 +4,13 @@ import { prisma } from '@/lib/prisma'
 import { hashPassword, createSession } from '@/lib/auth'
 
 /**
+ * GET /api/auth/register
+ */
+export async function GET() {
+  return NextResponse.json({ error: 'Method not allowed' }, { status: 405 })
+}
+
+/**
  * POST /api/auth/register
  * Register a new store owner account with business type
  */
