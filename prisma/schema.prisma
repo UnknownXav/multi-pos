@@ -5,6 +5,7 @@ generator client {
 datasource db {
   provider = "mysql"
   url      = env("DATABASE_URL")
+  relationMode = "prisma"
 }
 
 enum BusinessType {
@@ -42,7 +43,7 @@ model Store {
   name            String
   businessType    BusinessType
   ownerId         Int
-  owner           User        @relation("StoreOwner", fields: [ownerId], references: [id])
+  owner           User        @relation("StoreOwner", fields: [ownerId], references: [id], onDelete: NoAction, onUpdate: NoAction)
   users           User[]      @relation("StoreUsers")
   products        Product[]
   sales           Sale[]
@@ -66,7 +67,7 @@ model User {
   name          String
   role          String    @default("cashier")  // "owner", "cashier", "waiter", "kitchen", "pharmacist"
   storeId       Int?
-  store         Store?    @relation("StoreUsers", fields: [storeId], references: [id])
+  store         Store?    @relation("StoreUsers", fields: [storeId], references: [id], onDelete: NoAction, onUpdate: NoAction)
   ownedStores   Store[]   @relation("StoreOwner")
   sales         Sale[]
   
@@ -105,6 +106,7 @@ model Product {
   updatedAt          DateTime   @default(now()) @updatedAt
   
   @@unique([storeId, barcode])
+  @@index([storeId])
 }
 
 model Batch {
@@ -143,6 +145,9 @@ model Sale {
   items         SaleItem[]
   createdAt     DateTime   @default(now())
   updatedAt     DateTime   @default(now()) @updatedAt
+
+  @@index([storeId])
+  @@index([createdAt])
 }
 
 model SaleItem {
@@ -158,6 +163,8 @@ model SaleItem {
   notes     String? // For kitchen instructions
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now()) @updatedAt
+
+  @@index([saleId])
 }
 
 model StockAdjustment {
@@ -172,6 +179,8 @@ model StockAdjustment {
   quantity    Int
   reason      String?
   createdAt   DateTime @default(now())
+
+  @@index([productId])
 }
 
 model RestaurantTable {
@@ -186,6 +195,7 @@ model RestaurantTable {
   updatedAt   DateTime     @default(now()) @updatedAt
   
   @@unique([storeId, tableNumber])
+  @@index([storeId])
 }
 
 // --- Pharmacy Specific ---
