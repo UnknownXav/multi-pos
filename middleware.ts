@@ -9,7 +9,7 @@ const publicRoutes = ['/login', '/register', '/api/auth/login', '/api/auth/regis
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
-  const ip = request.ip || request.headers.get('x-forwarded-for') || '127.0.0.1'
+  const ip = (request as any).ip || request.headers.get('x-forwarded-for') || '127.0.0.1'
 
   // 1. Force HTTPS in production
   if (process.env.NODE_ENV === 'production' && !request.nextUrl.protocol.startsWith('https')) {
