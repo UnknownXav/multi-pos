@@ -1,21 +1,19 @@
-import { NextResponse, NextRequest } from 'next/server'
-export const dynamic = 'force-dynamic'
+import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 
-/**
- * DELETE /api/membership-plans/[id]
- */
+export const dynamic = 'force-dynamic'
+
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
+  context: { params: Promise<{ id: string }> }
+): Promise<Response> {
   try {
-    const { id: idStr } = await params
-    const id = Number(idStr)
+    const { id } = await context.params
+    const numericId = Number(id)
 
     const sessionStoreId = request.headers.get('X-Store-ID')
 
-    if (!sessionStoreId || Number.isNaN(id)) {
+    if (!sessionStoreId || Number.isNaN(numericId)) {
       return NextResponse.json(
         { success: false, error: 'Unauthorized or invalid ID' },
         { status: 401 }
@@ -25,7 +23,7 @@ export async function DELETE(
     const storeId = Number(sessionStoreId)
 
     const plan = await prisma.membershipPlan.findFirst({
-      where: { id, storeId },
+      where: { id: numericId, storeId },
       include: { _count: { select: { subscriptions: true } } },
     })
 
@@ -41,14 +39,14 @@ export async function DELETE(
         {
           success: false,
           error:
-            'Cannot delete plan: This plan has active or past subscriptions. Consider archiving instead.',
+            'Cannot delete plan: This plan has active or past subscriptions.',
         },
         { status: 400 }
       )
     }
 
     await prisma.membershipPlan.delete({
-      where: { id },
+      where: { id: numericId },
     })
 
     return NextResponse.json({
@@ -56,7 +54,7 @@ export async function DELETE(
       message: 'Plan deleted',
     })
   } catch (error) {
-    console.error('DELETE /api/membership-plans/[id] error:', error)
+    console.error(error)
 
     return NextResponse.json(
       { success: false, error: 'Failed to delete plan' },
