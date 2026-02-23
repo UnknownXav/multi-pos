@@ -1,0 +1,81 @@
+
+> pos-web-app@0.1.0 build
+> next build
+
+   Γû▓ Next.js 14.0.0
+   - Environments: .env
+
+   Creating an optimized production build ...
+ Γ£ô Compiled successfully
+   Linting and checking validity of types ...
+   Collecting page data ...
+   Generating static pages (0/21) ...
+
+   Generating static pages (5/21) 
+
+   Generating static pages (10/21) 
+
+   Generating static pages (15/21) 
+
+ Γ£ô Generating static pages (21/21) 
+   Finalizing page optimization ...
+   Collecting build traces ...
+
+Route (app)                              Size     First Load JS
+Γöî Γùï /                                    139 B          88.2 kB
+Γö£ Γùï /_not-found                          880 B          88.9 kB
+Γö£ ╬╗ /api/auth/login                      0 B                0 B
+Γö£ ╬╗ /api/auth/logout                     0 B                0 B
+Γö£ ╬╗ /api/auth/register                   0 B                0 B
+Γö£ ╬╗ /api/auth/session                    0 B                0 B
+Γö£ ╬╗ /api/check-ins                       0 B                0 B
+Γö£ ╬╗ /api/dashboard/stats                 0 B                0 B
+Γö£ ╬╗ /api/gym/payments                    0 B                0 B
+Γö£ ╬╗ /api/inventory/adjust                0 B                0 B
+Γö£ ╬╗ /api/inventory/audit                 0 B                0 B
+Γö£ ╬╗ /api/inventory/movement              0 B                0 B
+Γö£ ╬╗ /api/maintenance/sync                0 B                0 B
+Γö£ ╬╗ /api/members                         0 B                0 B
+Γö£ ╬╗ /api/membership-plans                0 B                0 B
+Γö£ ╬╗ /api/membership-plans/[id]           0 B                0 B
+Γö£ ╬╗ /api/orders                          0 B                0 B
+Γö£ ╬╗ /api/products                        0 B                0 B
+Γö£ ╬╗ /api/products/[id]                   0 B                0 B
+Γö£ ╬╗ /api/reports                         0 B                0 B
+Γö£ ╬╗ /api/reports/advanced                0 B                0 B
+Γö£ ╬╗ /api/reports/analytics               0 B                0 B
+Γö£ ╬╗ /api/reports/expiring                0 B                0 B
+Γö£ ╬╗ /api/reports/gym/subscriptions       0 B                0 B
+Γö£ ╬╗ /api/sales                           0 B                0 B
+Γö£ ╬╗ /api/tables                          0 B                0 B
+Γö£ ╬╗ /api/tables/[id]                     0 B                0 B
+Γö£ Γùï /checkin                             2.31 kB        90.3 kB
+Γö£ Γùï /checkout                            7.44 kB        98.6 kB
+Γö£ Γùï /dashboard                           4.49 kB        92.5 kB
+Γö£ Γùï /gym/payments                        2.79 kB        93.9 kB
+Γö£ Γùï /inventory/audit                     3.52 kB        91.6 kB
+Γö£ Γùï /kitchen                             2.38 kB        90.4 kB
+Γö£ Γùï /login                               1.41 kB          97 kB
+Γö£ Γùï /memberships                         4.25 kB        92.3 kB
+Γö£ ╬╗ /orders/[tableId]                    4.03 kB        92.1 kB
+Γö£ Γùï /products                            4.87 kB        92.9 kB
+Γö£ Γùï /register                            3.1 kB         98.7 kB
+Γö£ Γùï /reports                             4.24 kB        92.3 kB
+Γö£ Γùï /reports/advanced                    2.13 kB        90.2 kB
+Γö£ Γùï /reports/analytics                   125 kB          213 kB
+Γö£ Γùï /reports/expiring                    3.34 kB        91.4 kB
+Γö£ Γùï /reports/gym                         2.71 kB        90.7 kB
+Γö£ Γùï /sales                               2.54 kB        93.7 kB
+Γöö Γùï /tables                              4.29 kB        92.3 kB
++ First Load JS shared by all            88 kB
+  Γö£ chunks/472-11e1d68d0f144073.js       32.5 kB
+  Γö£ chunks/fd9d1056-e9ac3cf6ed44948c.js  53.3 kB
+  Γö£ chunks/main-app-2c32d4d50b45d6c4.js  235 B
+  Γöö chunks/webpack-39ae8d1ce4662bf6.js   1.99 kB
+
+
+╞Æ Middleware                             53 kB
+
+Γùï  (Static)   prerendered as static HTML
+╬╗  (Dynamic)  server-rendered on demand using Node.js
+
