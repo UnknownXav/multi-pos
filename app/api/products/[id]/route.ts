@@ -6,9 +6,9 @@ import { prisma } from '@/lib/prisma'
  * PUT /api/products/[id]
  * Update a product — now includes kitchenStation and security hardening
  */
-export async function PUT(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+export async function PUT(request: NextRequest, context: { params: Promise<{ id: string }> }) {
   try {
-    const { id: idStr } = await params
+    const { id: idStr } = await context.params
     const productId = parseInt(idStr)
     const body = await request.json()
     const { name, barcode, price, stock, lowStockThreshold, kitchenStation } = body
@@ -89,9 +89,9 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
  * DELETE /api/products/[id]
  * Delete a product with security check
  */
-export async function DELETE(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+export async function DELETE(request: NextRequest, context: { params: Promise<{ id: string }> }) {
   try {
-    const { id: idStr } = await params
+    const { id: idStr } = await context.params
     const productId = parseInt(idStr)
 
     // ✅ SECURITY: Enforce store ownership

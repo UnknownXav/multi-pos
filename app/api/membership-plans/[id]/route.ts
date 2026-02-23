@@ -8,10 +8,10 @@ import { prisma } from '@/lib/prisma'
  */
 export async function DELETE(
     request: NextRequest,
-    { params }: { params: Promise<{ id: string }> }
+    context: { params: Promise<{ id: string }> }
 ) {
     try {
-        const { id: idStr } = await params
+        const { id: idStr } = await context.params
         const id = parseInt(idStr)
 
         // ✅ SECURITY: Enforce session ownership
