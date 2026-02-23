@@ -1,0 +1,110 @@
+-- Standard MySQL Schema Fix Script
+USE pos_db;
+
+-- 1. Update Product table (Generic Pharmacy Fields)
+ALTER TABLE Product ADD COLUMN genericName VARCHAR(255);
+ALTER TABLE Product ADD COLUMN category VARCHAR(255);
+ALTER TABLE Product ADD COLUMN isPrescriptionRequired BOOLEAN DEFAULT FALSE;
+
+-- 2. Update Sale table (Restaurant & Order Tracking)
+ALTER TABLE Sale ADD COLUMN status ENUM('OPEN', 'IN_PROGRESS', 'READY', 'BILLING', 'PAID', 'CANCELLED') DEFAULT 'PAID';
+ALTER TABLE Sale ADD COLUMN tableId INT;
+
+-- 3. Update SaleItem table (Kitchen & Batch tracking)
+ALTER TABLE SaleItem ADD COLUMN notes TEXT;
+ALTER TABLE SaleItem ADD COLUMN batchId INT;
+
+-- 4. Create Secondary Tables
+CREATE TABLE Batch (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    productId INT NOT NULL,
+    batchNumber VARCHAR(255) NOT NULL,
+    expiryDate DATETIME NOT NULL,
+    quantity INT NOT NULL,
+    costPrice DOUBLE,
+    sellingPrice DOUBLE,
+    supplier VARCHAR(255),
+    createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updatedAt DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (productId) REFERENCES Product(id) ON DELETE CASCADE
+);
+
+CREATE TABLE Prescription (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    saleId INT NOT NULL UNIQUE,
+    imageUrl VARCHAR(255),
+    referenceNumber VARCHAR(255),
+    status ENUM('PENDING', 'APPROVED', 'REJECTED') DEFAULT 'PENDING',
+    FOREIGN KEY (saleId) REFERENCES Sale(id) ON DELETE CASCADE
+);
+
+CREATE TABLE ApprovalLog (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    prescriptionId INT NOT NULL UNIQUE,
+    pharmacistId INT NOT NULL,
+    action ENUM('PENDING', 'APPROVED', 'REJECTED') NOT NULL,
+    notes TEXT,
+    createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (prescriptionId) REFERENCES Prescription(id) ON DELETE CASCADE,
+    FOREIGN KEY (pharmacistId) REFERENCES User(id)
+);
+
+CREATE TABLE MembershipPlan (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    storeId INT NOT NULL,
+    name VARCHAR(255) NOT NULL,
+    durationDays INT NOT NULL,
+    price DOUBLE NOT NULL,
+    description TEXT,
+    createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updatedAt DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (storeId) REFERENCES Store(id) ON DELETE CASCADE
+);
+
+CREATE TABLE Member (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    storeId INT NOT NULL,
+    name VARCHAR(255) NOT NULL,
+    email VARCHAR(255),
+    phone VARCHAR(255),
+    address TEXT,
+    barcode VARCHAR(255),
+    status VARCHAR(255) DEFAULT 'inactive',
+    createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updatedAt DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (storeId) REFERENCES Store(id) ON DELETE CASCADE
+);
+
+CREATE TABLE Subscription (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    memberId INT NOT NULL,
+    planId INT NOT NULL,
+    startDate DATETIME DEFAULT CURRENT_TIMESTAMP,
+    endDate DATETIME NOT NULL,
+    status VARCHAR(255) DEFAULT 'active',
+    createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updatedAt DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (memberId) REFERENCES Member(id) ON DELETE CASCADE,
+    FOREIGN KEY (planId) REFERENCES MembershipPlan(id)
+);
+
+CREATE TABLE CheckIn (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    memberId INT NOT NULL,
+    timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (memberId) REFERENCES Member(id) ON DELETE CASCADE
+);
+
+CREATE TABLE StockAdjustment (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    productId INT NOT NULL,
+    batchId INT,
+    userId INT NOT NULL,
+    type VARCHAR(50) NOT NULL,
+    quantity INT NOT NULL,
+    reason TEXT,
+    createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (productId) REFERENCES Product(id) ON DELETE CASCADE,
+    FOREIGN KEY (batchId) REFERENCES Batch(id) ON DELETE SET NULL,
+    FOREIGN KEY (userId) REFERENCES User(id)
+);

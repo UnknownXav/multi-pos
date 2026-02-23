@@ -1,0 +1,263 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+enum BusinessType {
+  RETAIL          // Sari-Sari Store / Mini Mart
+  RESTAURANT      // Restaurant / Café
+  PHARMACY        // Drugstore / Pharmacy
+  GYM             // Fitness Studio / Gym
+}
+
+enum TableStatus {
+  AVAILABLE
+  OCCUPIED
+  RESERVED
+  CLEANING
+}
+
+enum OrderStatus {
+  OPEN          // Created at table
+  IN_PROGRESS   // Sent to kitchen
+  READY         // Kitchen completed
+  BILLING       // Bill requested
+  PAID          // Transaction closed
+  CANCELLED
+}
+
+enum ApprovalStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+// Store represents each business
+model Store {
+  id              Int         @id @default(autoincrement())
+  name            String
+  businessType    BusinessType
+  ownerId         Int
+  owner           User        @relation("StoreOwner", fields: [ownerId], references: [id])
+  users           User[]      @relation("StoreUsers")
+  products        Product[]
+  sales           Sale[]
+  tables          RestaurantTable[]
+  
+  // Gym models
+  membershipPlans MembershipPlan[]
+  members         Member[]
+  
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @default(now()) @updatedAt
+  
+  @@unique([name, ownerId])
+}
+
+// User includes both owner and cashiers
+model User {
+  id            Int       @id @default(autoincrement())
+  email         String    @unique
+  password      String
+  name          String
+  role          String    @default("cashier")  // "owner", "cashier", "waiter", "kitchen", "pharmacist"
+  storeId       Int?
+  store         Store?    @relation("StoreUsers", fields: [storeId], references: [id])
+  ownedStores   Store[]   @relation("StoreOwner")
+  sales         Sale[]
+  
+  // Pharmacy Approvals
+  approvals     ApprovalLog[]
+  stockAdjustments StockAdjustment[]
+
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @default(now()) @updatedAt
+}
+
+model Product {
+  id                 Int        @id @default(autoincrement())
+  storeId            Int
+  store              Store      @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  name               String
+  barcode            String?
+  price              Float
+  costPrice          Float      @default(0)
+  stock              Int        @default(0) // Aggregate of batches for Pharmacy, or manual for Retail
+  lowStockThreshold  Int        @default(5)
+  
+  // Pharmacy Metadata
+  genericName        String?
+  category           String?    // e.g., "Antibiotics", "Vitamins"
+  isPrescriptionRequired Boolean @default(false)
+  isArchived             Boolean @default(false)
+  kitchenStation         String?    // Restaurant: e.g., "Main Kitchen", "Bar", "Dessert Station"
+  
+  // Relations
+  batches            Batch[]    // Batch tracking for Pharmacy
+  saleItems          SaleItem[]
+  stockAdjustments   StockAdjustment[]
+  
+  createdAt          DateTime   @default(now())
+  updatedAt          DateTime   @default(now()) @updatedAt
+  
+  @@unique([storeId, barcode])
+}
+
+model Batch {
+  id            Int       @id @default(autoincrement())
+  productId     Int
+  product       Product   @relation(fields: [productId], references: [id], onDelete: Cascade)
+  batchNumber   String
+  expiryDate    DateTime
+  quantity      Int
+  costPrice     Float?
+  sellingPrice  Float?
+  supplier      String?
+  saleItems     SaleItem[]
+  stockAdjustments StockAdjustment[]
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @default(now()) @updatedAt
+}
+
+model Sale {
+  id            Int        @id @default(autoincrement())
+  storeId       Int
+  store         Store      @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  cashierId     Int
+  cashier       User       @relation(fields: [cashierId], references: [id])
+  total         Float
+  paymentMethod String     @default("cash")  // cash, card, online
+  
+  // Restaurant Flow
+  status        OrderStatus @default(PAID)    // Retail defaults to PAID, Restaurant starts at OPEN
+  tableId       Int?
+  table         RestaurantTable? @relation(fields: [tableId], references: [id], onDelete: SetNull)
+  
+  // Pharmacy Flow
+  prescription  Prescription?
+  
+  items         SaleItem[]
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @default(now()) @updatedAt
+}
+
+model SaleItem {
+  id        Int     @id @default(autoincrement())
+  saleId    Int
+  sale      Sale    @relation(fields: [saleId], references: [id], onDelete: Cascade)
+  productId Int
+  product   Product @relation(fields: [productId], references: [id])
+  batchId   Int?
+  batch     Batch?  @relation(fields: [batchId], references: [id])
+  price     Float
+  quantity  Int
+  notes     String? // For kitchen instructions
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+}
+
+model StockAdjustment {
+  id          Int      @id @default(autoincrement())
+  productId   Int
+  product     Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  batchId     Int?
+  batch       Batch?   @relation(fields: [batchId], references: [id], onDelete: SetNull)
+  userId      Int
+  user        User     @relation(fields: [userId], references: [id])
+  type        String   // "IN", "OUT", "DAMAGE", "RETURN", "EXPIRY", "CORRECTION"
+  quantity    Int
+  reason      String?
+  createdAt   DateTime @default(now())
+}
+
+model RestaurantTable {
+  id          Int          @id @default(autoincrement())
+  storeId     Int
+  store       Store        @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  tableNumber String       // Changed to String for naming like "T1", "A2"
+  capacity    Int          @default(4)
+  status      TableStatus  @default(AVAILABLE)
+  sales       Sale[]
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @default(now()) @updatedAt
+  
+  @@unique([storeId, tableNumber])
+}
+
+// --- Pharmacy Specific ---
+
+model Prescription {
+  id                Int            @id @default(autoincrement())
+  saleId            Int            @unique
+  sale              Sale           @relation(fields: [saleId], references: [id], onDelete: Cascade)
+  imageUrl          String?
+  referenceNumber   String?
+  status            ApprovalStatus @default(PENDING)
+  approvalLog       ApprovalLog?
+}
+
+model ApprovalLog {
+  id              Int          @id @default(autoincrement())
+  prescriptionId  Int          @unique
+  prescription    Prescription @relation(fields: [prescriptionId], references: [id], onDelete: Cascade)
+  pharmacistId    Int
+  pharmacist      User         @relation(fields: [pharmacistId], references: [id])
+  action          ApprovalStatus
+  notes           String?
+  createdAt       DateTime     @default(now())
+}
+
+// --- Gym Specific ---
+
+model MembershipPlan {
+  id            Int            @id @default(autoincrement())
+  storeId       Int
+  store         Store          @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  name          String         // Monthly, Quarterly, etc.
+  durationDays  Int
+  price         Float
+  description   String?
+  subscriptions Subscription[]
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @default(now()) @updatedAt
+}
+
+model Member {
+  id            Int            @id @default(autoincrement())
+  storeId       Int
+  store         Store          @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  name          String
+  barcode       String?
+  email         String?
+  phone         String?
+  address       String?
+  status        String         @default("inactive") // active, inactive, expired
+  subscriptions Subscription[]
+  checkIns      CheckIn[]
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @default(now()) @updatedAt
+}
+
+model Subscription {
+  id          Int            @id @default(autoincrement())
+  memberId    Int
+  member      Member         @relation(fields: [memberId], references: [id], onDelete: Cascade)
+  planId      Int
+  plan        MembershipPlan @relation(fields: [planId], references: [id])
+  startDate   DateTime       @default(now())
+  endDate     DateTime
+  status      String         @default("active") // active, expired, cancelled
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @default(now()) @updatedAt
+}
+
+model CheckIn {
+  id        Int      @id @default(autoincrement())
+  memberId  Int
+  member    Member   @relation(fields: [memberId], references: [id], onDelete: Cascade)
+  timestamp DateTime @default(now())
+}

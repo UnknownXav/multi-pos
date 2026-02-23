@@ -1,0 +1,6 @@
+{
+  "db_url": "mysql://posuser:pos_password_123@localhost:3306/pos_db",
+  "storeCount": 0,
+  "userCount": 0,
+  "productCount": 0
+}
