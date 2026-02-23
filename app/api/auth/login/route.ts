@@ -4,6 +4,14 @@ import { prisma } from '@/lib/prisma'
 import { verifyPassword, createSession } from '@/lib/auth'
 
 /**
+ * GET /api/auth/login
+ * Prevent static optimization
+ */
+export async function GET() {
+  return NextResponse.json({ error: 'Method not allowed' }, { status: 405 })
+}
+
+/**
  * POST /api/auth/login
  * Authenticate cashier with email and password
  */
