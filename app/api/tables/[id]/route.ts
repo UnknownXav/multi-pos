@@ -8,10 +8,11 @@ import { prisma } from '@/lib/prisma'
  */
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const tableId = parseInt(params.id)
+    const { id: idStr } = await params
+    const tableId = parseInt(idStr)
     const body = await request.json()
     const { status, capacity } = body
 
@@ -58,10 +59,11 @@ export async function PUT(
  */
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const tableId = parseInt(params.id)
+    const { id: idStr } = await params
+    const tableId = parseInt(idStr)
 
     // ✅ SECURITY: Enforce session ownership
     const sessionStoreId = request.headers.get('X-Store-ID')
