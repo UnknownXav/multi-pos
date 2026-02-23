@@ -1,0 +1,74 @@
+[
+  {
+    "id": 4,
+    "email": "test1@tt.com",
+    "password": "$2b$10$MBRX6QjrgJJZ476QiLN7GezIIoB3ocrsaggyMTBkSbhQq1gt87LZC",
+    "name": "test",
+    "role": "owner",
+    "storeId": 1,
+    "createdAt": "2026-02-22T09:05:52.625Z",
+    "updatedAt": "2026-02-22T09:05:52.625Z",
+    "store": {
+      "id": 1,
+      "name": "test",
+      "businessType": "RETAIL",
+      "ownerId": 4,
+      "createdAt": "2026-02-22T09:05:52.625Z",
+      "updatedAt": "2026-02-22T09:05:52.625Z"
+    }
+  },
+  {
+    "id": 5,
+    "email": "test@tt.tt",
+    "password": "$2b$10$.GHA3aBEGHPDK24B.gp4mOm9ZbgFBue92yOcNBsHUuBGVXfWm5pCu",
+    "name": "test",
+    "role": "owner",
+    "storeId": 2,
+    "createdAt": "2026-02-22T09:06:35.072Z",
+    "updatedAt": "2026-02-22T09:06:35.072Z",
+    "store": {
+      "id": 2,
+      "name": "test",
+      "businessType": "RETAIL",
+      "ownerId": 5,
+      "createdAt": "2026-02-22T09:06:35.072Z",
+      "updatedAt": "2026-02-22T09:06:35.072Z"
+    }
+  },
+  {
+    "id": 6,
+    "email": "test@tt.com",
+    "password": "$2b$10$wjeMeatRlzLjJTZYuZB4xOgPIdu58L6b6/k/aG87lDRrxP7EsZAbu",
+    "name": "test",
+    "role": "owner",
+    "storeId": 3,
+    "createdAt": "2026-02-22T09:18:25.266Z",
+    "updatedAt": "2026-02-22T09:18:25.266Z",
+    "store": {
+      "id": 3,
+      "name": "test",
+      "businessType": "RETAIL",
+      "ownerId": 6,
+      "createdAt": "2026-02-22T09:18:25.266Z",
+      "updatedAt": "2026-02-22T09:18:25.266Z"
+    }
+  },
+  {
+    "id": 7,
+    "email": "test@ttt.tt",
+    "password": "$2b$10$AjsbVq8lOUIye0u8nodYre.UPR8SF5JqueqpZk1DTzeXQrU/8Ba3S",
+    "name": "Test",
+    "role": "owner",
+    "storeId": 4,
+    "createdAt": "2026-02-22T10:20:27.119Z",
+    "updatedAt": "2026-02-22T10:20:27.119Z",
+    "store": {
+      "id": 4,
+      "name": "Test",
+      "businessType": "RETAIL",
+      "ownerId": 7,
+      "createdAt": "2026-02-22T10:20:27.119Z",
+      "updatedAt": "2026-02-22T10:20:27.119Z"
+    }
+  }
+]

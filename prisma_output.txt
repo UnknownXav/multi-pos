@@ -1,0 +1,6 @@
+Environment variables loaded from .env
+Prisma schema loaded from prisma\schema.prisma
+Datasource "db": MySQL database "pos_db" at "localhost:3306"
+
+The database is already in sync with the Prisma schema.
+
