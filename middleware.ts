@@ -9,11 +9,38 @@ const publicRoutes = ['/login', '/register', '/api/auth/login', '/api/auth/regis
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
+  const origin = request.headers.get('origin')
+
+  // Define allowed origins
+  const allowedOrigins = [
+    'https://multi-pos-eight.vercel.app',
+    'http://localhost:3000',
+    'http://127.0.0.1:3000'
+  ]
+
+  // Handle CORS
+  const isAllowedOrigin = origin && allowedOrigins.includes(origin)
+
+  // Preflight request handling
+  if (request.method === 'OPTIONS') {
+    return new NextResponse(null, {
+      status: 200,
+      headers: {
+        'Access-Control-Allow-Origin': isAllowedOrigin ? origin : allowedOrigins[0],
+        'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+        'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Store-ID, X-User-Role',
+        'Access-Control-Max-Age': '86400',
+      },
+    })
+  }
+
   const ip = (request as any).ip || request.headers.get('x-forwarded-for') || '127.0.0.1'
 
   // 1. Force HTTPS in production
   if (process.env.NODE_ENV === 'production' && !request.nextUrl.protocol.startsWith('https')) {
-    return NextResponse.redirect(`https://${request.nextUrl.host}${request.nextUrl.pathname}`, 301)
+    const response = NextResponse.redirect(`https://${request.nextUrl.host}${request.nextUrl.pathname}`, 301)
+    if (isAllowedOrigin) response.headers.set('Access-Control-Allow-Origin', origin)
+    return response
   }
 
   // 2. Basic Rate Limiting for Login (5 attempts per minute)
@@ -32,7 +59,9 @@ export async function middleware(request: NextRequest) {
 
   // Allow public routes
   if (publicRoutes.some(route => pathname.startsWith(route))) {
-    return NextResponse.next()
+    const response = NextResponse.next()
+    if (isAllowedOrigin) response.headers.set('Access-Control-Allow-Origin', origin)
+    return response
   }
 
   // Check for session in cookies or Authorization header
@@ -44,16 +73,18 @@ export async function middleware(request: NextRequest) {
   if (!session && !pathname.startsWith('/api')) {
     const loginUrl = new URL('/login', request.url)
     loginUrl.searchParams.set('callbackUrl', pathname)
-    return NextResponse.redirect(loginUrl)
+    const response = NextResponse.redirect(loginUrl)
+    if (isAllowedOrigin) response.headers.set('Access-Control-Allow-Origin', origin)
+    return response
   }
 
   if (!session && pathname.startsWith('/api')) {
-    return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 })
+    const response = NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 })
+    if (isAllowedOrigin) response.headers.set('Access-Control-Allow-Origin', origin)
+    return response
   }
 
   // ✅ Inject session context into the FORWARDED REQUEST headers (not response).
-  // NextResponse.next({ request }) is the correct Next.js pattern so that
-  // API route handlers can read these via request.headers.get().
   if (session) {
     const requestHeaders = new Headers(request.headers)
     requestHeaders.set('X-User-ID', session.userId.toString())
@@ -61,10 +92,14 @@ export async function middleware(request: NextRequest) {
     if (session.storeId != null) {
       requestHeaders.set('X-Store-ID', session.storeId.toString())
     }
-    return NextResponse.next({ request: { headers: requestHeaders } })
+    const response = NextResponse.next({ request: { headers: requestHeaders } })
+    if (isAllowedOrigin) response.headers.set('Access-Control-Allow-Origin', origin)
+    return response
   }
 
-  return NextResponse.next()
+  const response = NextResponse.next()
+  if (isAllowedOrigin) response.headers.set('Access-Control-Allow-Origin', origin)
+  return response
 }
 
 // Protect all routes except public ones and static assets
