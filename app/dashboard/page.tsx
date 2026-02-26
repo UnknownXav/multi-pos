@@ -277,7 +277,7 @@ export default function DashboardPage() {
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M7 12l3-3 3 3 4-4" />
             </svg>
-            <h2 className="text-xl font-black text-slate-800 tracking-tight">Weekly {store?.businessType === 'WATER_BILLING' ? 'Collection' : 'Sales'} Overview</h2>
+            <h2 className="text-xl font-black text-slate-800 tracking-tight">Monthly {store?.businessType === 'WATER_BILLING' ? 'Collection' : 'Sales'} Overview</h2>
           </div>
           <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest bg-slate-50 px-3 py-1 rounded-lg">Last 7 Days</p>
         </div>
