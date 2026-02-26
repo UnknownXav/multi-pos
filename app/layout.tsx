@@ -4,7 +4,10 @@ import LayoutWrapper from '../components/LayoutWrapper'
 
 export const metadata = {
   title: 'POS - Dashboard',
-  description: 'Point of Sale web UI'
+  description: 'Point of Sale web UI',
+  icons: {
+    icon: '/favicon.ico',
+  },
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
