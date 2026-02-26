@@ -1,23 +1,7 @@
-import bcrypt from 'bcryptjs'
 import { SignJWT, jwtVerify } from 'jose'
 
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-change-this'
 const key = new TextEncoder().encode(JWT_SECRET)
-
-/**
- * Hash password using bcryptjs
- */
-export async function hashPassword(password: string): Promise<string> {
-  const salt = await bcrypt.genSalt(10)
-  return bcrypt.hash(password, salt)
-}
-
-/**
- * Verify password against hash
- */
-export async function verifyPassword(password: string, hashedPassword: string): Promise<boolean> {
-  return bcrypt.compare(password, hashedPassword)
-}
 
 /**
  * Create session token using jose

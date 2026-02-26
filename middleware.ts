@@ -42,7 +42,9 @@ export async function middleware(request: NextRequest) {
   const session = await verifySession(sessionCookie || authHeader || '')
 
   if (!session && !pathname.startsWith('/api')) {
-    return NextResponse.redirect(new URL('/login', request.url))
+    const loginUrl = new URL('/login', request.url)
+    loginUrl.searchParams.set('callbackUrl', pathname)
+    return NextResponse.redirect(loginUrl)
   }
 
   if (!session && pathname.startsWith('/api')) {

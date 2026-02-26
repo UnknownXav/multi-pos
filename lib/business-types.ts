@@ -7,6 +7,7 @@ export enum BusinessType {
   RESTAURANT = 'RESTAURANT',
   PHARMACY = 'PHARMACY',
   GYM = 'GYM',
+  WATER_BILLING = 'WATER_BILLING',
 }
 
 export const BUSINESS_TYPES = {
@@ -14,6 +15,7 @@ export const BUSINESS_TYPES = {
   RESTAURANT: { label: 'Restaurant / Café', value: 'RESTAURANT' },
   PHARMACY: { label: 'Pharmacy / Drugstore', value: 'PHARMACY' },
   GYM: { label: 'Gym / Fitness Studio', value: 'GYM' },
+  WATER_BILLING: { label: 'Water Billing / Utility', value: 'WATER_BILLING' },
 }
 
 export const BUSINESS_TYPE_CONFIG = {
@@ -56,5 +58,16 @@ export const BUSINESS_TYPE_CONFIG = {
     hasExpiry: false,
     hasMembership: true,
     hasTable: false,
+  },
+  WATER_BILLING: {
+    label: 'Water Billing',
+    icon: '💧',
+    dashboardCards: ['Total Outstanding', 'Collection Today', 'New Readings', 'Overdue Accounts'],
+    hasBarcode: false,
+    hasStock: false,
+    hasExpiry: false,
+    hasMembership: false,
+    hasTable: false,
+    hasWater: true,
   },
 }

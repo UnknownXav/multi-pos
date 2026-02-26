@@ -93,7 +93,7 @@ export default function DashboardPage() {
     <div className="space-y-6 pb-10">
       {/* Stat Cards Row */}
       <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
-        {/* Standard Sales Cards (Retail) */}
+        {/* Business-type specific cards */}
         {store?.businessType === 'RETAIL' ? (
           <>
             <Card
@@ -217,6 +217,38 @@ export default function DashboardPage() {
               onClick={() => router.push('/memberships')}
             />
           </>
+        ) : store?.businessType === 'WATER_BILLING' ? (
+          <>
+            <Card
+              title="Today's Collections"
+              value={`₱${stats?.todayCollections?.toLocaleString() || '0'}`}
+              icon={<svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>}
+              onClick={() => router.push('/water/billing')}
+            />
+            <Card
+              title="Outstanding"
+              value={`₱${stats?.outstandingAmount?.toLocaleString() || '0'}`}
+              subtitle="Unpaid Bills"
+              icon={<svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>}
+              highlight={stats?.outstandingAmount > 0}
+              onClick={() => router.push('/water/billing')}
+            />
+            <Card
+              title="Overdue Accounts"
+              value={stats?.overdueCount?.toString() || '0'}
+              subtitle="Require Penalty"
+              icon={<svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>}
+              highlight={stats?.overdueCount > 0}
+              onClick={() => router.push('/water/billing')}
+            />
+            <Card
+              title="Consumption"
+              value={`${stats?.thisMonthConsumption?.toLocaleString() || '0'} m³`}
+              subtitle="This Month"
+              icon={<svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" /></svg>}
+              onClick={() => router.push('/water/readings')}
+            />
+          </>
         ) : (
           <>
             <Card
@@ -245,7 +277,7 @@ export default function DashboardPage() {
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M7 12l3-3 3 3 4-4" />
             </svg>
-            <h2 className="text-xl font-black text-slate-800 tracking-tight">Weekly Sales Overview</h2>
+            <h2 className="text-xl font-black text-slate-800 tracking-tight">Weekly {store?.businessType === 'WATER_BILLING' ? 'Collection' : 'Sales'} Overview</h2>
           </div>
           <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest bg-slate-50 px-3 py-1 rounded-lg">Last 7 Days</p>
         </div>
@@ -254,7 +286,7 @@ export default function DashboardPage() {
         <div className="relative group">
           <div className="h-64 flex items-end justify-between px-2 sm:px-4">
             {weeklyChart.length === 0 ? (
-              <div className="w-full text-center text-slate-400 font-bold text-sm pb-8">No sales data yet for this period.</div>
+              <div className="w-full text-center text-slate-400 font-bold text-sm pb-8">No data yet for this period.</div>
             ) : (() => {
               const maxVal = Math.max(...weeklyChart.map(d => d.total), 1)
               return weeklyChart.map((d, i) => (
@@ -262,7 +294,7 @@ export default function DashboardPage() {
                   {/* Interaction Tooltip */}
                   <div className="absolute -top-12 opacity-0 group-hover/bar:opacity-100 transition-all duration-200 transform translate-y-2 group-hover/bar:translate-y-0 z-10">
                     <div className="bg-slate-900 text-white px-3 py-1.5 rounded-xl shadow-xl text-[11px] font-black whitespace-nowrap relative">
-                      ${d.total.toFixed(2)}
+                      ₱{d.total.toFixed(2)}
                       <div className="absolute top-full left-1/2 -translate-x-1/2 border-8 border-transparent border-t-slate-900"></div>
                     </div>
                   </div>
@@ -299,33 +331,42 @@ export default function DashboardPage() {
 
       {/* Action Cards Row */}
       <div className="grid gap-4 grid-cols-1 md:grid-cols-3">
-        <div className="bg-white rounded-[32px] p-8 shadow-sm border border-slate-50 flex flex-col items-start hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 cursor-pointer">
+        <div
+          onClick={() => router.push(store?.businessType === 'WATER_BILLING' ? '/water/consumers' : '/products')}
+          className="bg-white rounded-[32px] p-8 shadow-sm border border-slate-50 flex flex-col items-start hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 cursor-pointer"
+        >
           <div className="bg-blue-50 p-4 rounded-2xl text-blue-600 mb-6 font-bold">
             <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" /></svg>
           </div>
           <h3 className="text-xl font-black text-slate-800 mb-2">
-            {store?.businessType === 'RESTAURANT' ? 'Manage Menu' : store?.businessType === 'GYM' ? 'Manage Services' : 'Manage Products'}
+            {store?.businessType === 'RESTAURANT' ? 'Manage Menu' : store?.businessType === 'GYM' ? 'Manage Services' : store?.businessType === 'WATER_BILLING' ? 'Consumers' : 'Manage Products'}
           </h3>
-          <p className="text-[15px] font-semibold text-slate-400">Add, edit or remove items</p>
+          <p className="text-[15px] font-semibold text-slate-400">{store?.businessType === 'WATER_BILLING' ? 'Register and manage subscribers' : 'Add, edit or remove items'}</p>
         </div>
 
-        <div className="bg-white rounded-[32px] p-8 shadow-sm border border-slate-50 flex flex-col items-start hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 cursor-pointer">
+        <div
+          onClick={() => router.push(store?.businessType === 'WATER_BILLING' ? '/water/reports' : '/reports')}
+          className="bg-white rounded-[32px] p-8 shadow-sm border border-slate-50 flex flex-col items-start hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 cursor-pointer"
+        >
           <div className="bg-blue-50 p-4 rounded-2xl text-blue-600 mb-6 font-bold">
             <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" /></svg>
           </div>
           <h3 className="text-xl font-black text-slate-800 mb-2">View Reports</h3>
-          <p className="text-[15px] font-semibold text-slate-400">Analyze sales and performance</p>
+          <p className="text-[15px] font-semibold text-slate-400">Analyze collections and performance</p>
         </div>
 
-        <div className="bg-white rounded-[32px] p-8 shadow-sm border border-slate-50 flex flex-col items-start hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 cursor-pointer">
+        <div
+          onClick={() => router.push(store?.businessType === 'WATER_BILLING' ? '/water/billing' : '/memberships')}
+          className="bg-white rounded-[32px] p-8 shadow-sm border border-slate-50 flex flex-col items-start hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 cursor-pointer"
+        >
           <div className="bg-blue-50 p-4 rounded-2xl text-blue-600 mb-6 font-bold">
             <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
           </div>
           <h3 className="text-xl font-black text-slate-800 mb-2">
-            {store?.businessType === 'GYM' ? 'Member Management' : 'Customer Insights'}
+            {store?.businessType === 'GYM' ? 'Member Management' : store?.businessType === 'WATER_BILLING' ? 'Billing Console' : 'Customer Insights'}
           </h3>
           <p className="text-[15px] font-semibold text-slate-400">
-            {store?.businessType === 'GYM' ? 'Track member activity' : 'Track customer data'}
+            {store?.businessType === 'GYM' ? 'Track member activity' : store?.businessType === 'WATER_BILLING' ? 'Process payments' : 'Track customer data'}
           </p>
         </div>
       </div>

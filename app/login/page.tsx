@@ -1,10 +1,14 @@
 "use client"
-import React, { useState } from 'react'
+import React, { useState, Suspense } from 'react'
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
+import { getSafeRedirect } from '@/lib/security'
 
-export default function LoginPage() {
+function LoginForm() {
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const callbackUrl = searchParams.get('callbackUrl')
+
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState<string | null>(null)
@@ -39,8 +43,9 @@ export default function LoginPage() {
       // Important: clear loading state before redirecting in case it hangs
       setLoading(false)
 
-      // Success - redirect to dashboard
-      router.push('/dashboard')
+      // Success - redirect to validated callbackUrl or dashboard
+      const safeRedirect = getSafeRedirect(callbackUrl)
+      router.push(safeRedirect)
     } catch (err) {
       console.error('CRITICAL LOGIN ERROR:', err)
       setError('Network error. Please try again.')
@@ -122,5 +127,20 @@ export default function LoginPage() {
         </div>
       </div>
     </div>
+  )
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center p-6 bg-[#f8fafc]">
+        <div className="w-full max-w-[440px] bg-white rounded-2xl shadow-xl border border-slate-100 p-10 flex flex-col items-center justify-center">
+          <div className="w-12 h-12 border-4 border-blue-500/20 border-t-blue-500 rounded-full animate-spin mb-4"></div>
+          <p className="text-slate-500 font-medium">Loading session...</p>
+        </div>
+      </div>
+    }>
+      <LoginForm />
+    </Suspense>
   )
 }
