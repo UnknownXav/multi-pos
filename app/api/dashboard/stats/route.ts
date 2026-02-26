@@ -82,6 +82,25 @@ export async function GET(request: NextRequest) {
             prisma.sale.count({ where: { storeId: sId, status: { in: ['READY', 'PAID'] }, updatedAt: { gte: today } } }),
         ])
 
+        // Water Billing specific stats
+        const [todayCollections, outstandingAmount, overdueCount, thisMonthConsumption] = await Promise.all([
+            (prisma as any).waterPayment.aggregate({
+                where: { paymentDate: { gte: today }, bill: { storeId: sId } },
+                _sum: { amount: true }
+            }),
+            (prisma as any).waterBill.aggregate({
+                where: { storeId: sId, status: { in: ['Unpaid', 'Partially Paid', 'Overdue'] } },
+                _sum: { balance: true }
+            }),
+            (prisma as any).waterBill.count({
+                where: { storeId: sId, status: 'Overdue' }
+            }),
+            (prisma as any).meterReading.aggregate({
+                where: { consumer: { storeId: sId }, readingDate: { gte: startOfMonth } },
+                _sum: { consumption: true }
+            })
+        ])
+
         return NextResponse.json({
             success: true,
             data: {
@@ -102,6 +121,11 @@ export async function GET(request: NextRequest) {
                 activeTablesCount,
                 kitchenOrdersCount,
                 completedOrdersCount,
+                // Water Billing stats
+                todayCollections: todayCollections._sum.amount || 0,
+                outstandingAmount: outstandingAmount._sum.balance || 0,
+                overdueCount,
+                thisMonthConsumption: thisMonthConsumption._sum.consumption || 0,
             }
         })
     } catch (error) {

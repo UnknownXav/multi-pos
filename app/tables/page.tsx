@@ -274,8 +274,8 @@ export default function TablesPage() {
             <label className="block text-[11px] font-black text-slate-400 uppercase tracking-widest mb-2">Capacity (Seats)</label>
             <input
               type="number" required min="1" max="20"
-              value={newTable.capacity}
-              onChange={e => setNewTable({ ...newTable, capacity: parseInt(e.target.value) })}
+              value={isNaN(newTable.capacity) ? '' : newTable.capacity}
+              onChange={e => setNewTable({ ...newTable, capacity: e.target.value ? parseInt(e.target.value) : NaN })}
               className="w-full bg-slate-50 border-none rounded-xl px-4 py-3 font-bold text-slate-700 focus:ring-2 focus:ring-blue-600 transition"
             />
           </div>

@@ -32,6 +32,13 @@ const BUSINESS_TYPES = [
     desc: 'Membership & subscription management',
     color: 'purple',
   },
+  {
+    key: 'WATER_BILLING',
+    icon: '💧',
+    label: 'Water Billing POS',
+    desc: 'Utility billing with meter reading & tiered rates',
+    color: 'sky',
+  },
 ]
 
 const COLOR_MAP: Record<string, { border: string; bg: string; text: string; ring: string }> = {
@@ -39,6 +46,7 @@ const COLOR_MAP: Record<string, { border: string; bg: string; text: string; ring
   orange: { border: 'border-orange-500', bg: 'bg-orange-50', text: 'text-orange-600', ring: 'ring-orange-200' },
   green: { border: 'border-emerald-500', bg: 'bg-emerald-50', text: 'text-emerald-600', ring: 'ring-emerald-200' },
   purple: { border: 'border-violet-500', bg: 'bg-violet-50', text: 'text-violet-600', ring: 'ring-violet-200' },
+  sky: { border: 'border-sky-500', bg: 'bg-sky-50', text: 'text-sky-600', ring: 'ring-sky-200' },
 }
 
 export default function RegisterPage() {

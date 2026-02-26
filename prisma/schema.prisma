@@ -3,9 +3,9 @@ generator client {
 }
 
 datasource db {
-  provider = "mysql"
-  url      = env("DATABASE_URL")
-  relationMode = "prisma"
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
 }
 
 enum BusinessType {
@@ -13,6 +13,7 @@ enum BusinessType {
   RESTAURANT      // Restaurant / Café
   PHARMACY        // Drugstore / Pharmacy
   GYM             // Fitness Studio / Gym
+  WATER_BILLING   // Water District / Association
 }
 
 enum TableStatus {
@@ -52,6 +53,11 @@ model Store {
   // Gym models
   membershipPlans MembershipPlan[]
   members         Member[]
+  
+  // Water Billing models
+  consumers       Consumer[]
+  rateVersions    RateVersion[]
+  waterBills      WaterBill[]
   
   createdAt       DateTime    @default(now())
   updatedAt       DateTime    @default(now()) @updatedAt
@@ -270,4 +276,134 @@ model CheckIn {
   memberId  Int
   member    Member   @relation(fields: [memberId], references: [id], onDelete: Cascade)
   timestamp DateTime @default(now())
+}
+
+// --- Water Billing Specific ---
+
+model Consumer {
+  id              Int            @id @default(autoincrement())
+  storeId         Int
+  store           Store          @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  accountNumber   String         @unique
+  name            String
+  address         String
+  contactNumber   String?
+  meterNumber     String?
+  connectionType  String         @default("Residential") // Residential, Commercial
+  status          String         @default("Active")      // Active, Inactive, Disconnected
+  initialReading  Float          @default(0)
+  
+  readings        MeterReading[]
+  bills           WaterBill[]
+  
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @default(now()) @updatedAt
+
+  @@index([storeId])
+}
+
+model MeterReading {
+  id              Int            @id @default(autoincrement())
+  consumerId      Int
+  consumer        Consumer       @relation(fields: [consumerId], references: [id], onDelete: Cascade)
+  billingPeriod   String         // e.g., "2026-03"
+  previousReading Float
+  currentReading  Float
+  consumption     Float          // current - previous
+  readingDate     DateTime       @default(now())
+  
+  bill            WaterBill?
+  
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @default(now()) @updatedAt
+
+  @@unique([consumerId, billingPeriod])
+  @@index([billingPeriod])
+}
+
+model RateVersion {
+  id              Int            @id @default(autoincrement())
+  storeId         Int
+  store           Store          @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  name            String?        // e.g., "2026 Revised Rates"
+  effectiveDate   DateTime       @default(now())
+  isActive        Boolean        @default(true)
+  
+  tiers           RateTier[]
+  waterBills      WaterBill[]
+
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @default(now()) @updatedAt
+
+  @@index([storeId])
+}
+
+model RateTier {
+  id              Int            @id @default(autoincrement())
+  rateVersionId   Int
+  rateVersion     RateVersion    @relation(fields: [rateVersionId], references: [id], onDelete: Cascade)
+  fromCubicMeters Float          // Start of tier (inclusive)
+  toCubicMeters   Float?         // End of tier (exclusive), null means infinity
+  rate            Float          // Rate per cubic meter or fixed if it's the first tier
+  isMinimum       Boolean        @default(false)
+  
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @default(now()) @updatedAt
+}
+
+model WaterBill {
+  id              Int            @id @default(autoincrement())
+  storeId         Int
+  store           Store          @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  consumerId      Int
+  consumer        Consumer       @relation(fields: [consumerId], references: [id], onDelete: Cascade)
+  readingId       Int            @unique
+  reading         MeterReading   @relation(fields: [readingId], references: [id])
+  rateVersionId   Int
+  rateVersion     RateVersion    @relation(fields: [rateVersionId], references: [id])
+  
+  consumption     Float
+  amountDue       Float
+  environmentalFee Float         @default(0)
+  serviceCharge   Float          @default(0)
+  penaltyAmount   Float          @default(0)
+  totalAmount     Float
+  paidAmount      Float          @default(0)
+  balance         Float          @default(0)
+  
+  dueDate         DateTime
+  status          String         @default("Unpaid") // Unpaid, Partially Paid, Paid, Overdue
+  
+  payments        WaterPayment[]
+  penaltyRecord   WaterPenalty?
+  
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @default(now()) @updatedAt
+
+  @@index([storeId])
+  @@index([status])
+  @@index([dueDate])
+}
+
+model WaterPayment {
+  id              Int            @id @default(autoincrement())
+  billId          Int
+  bill            WaterBill      @relation(fields: [billId], references: [id], onDelete: Cascade)
+  amount          Float
+  paymentDate     DateTime       @default(now())
+  paymentMethod   String         @default("Cash")
+  referenceNumber String?
+  
+  createdAt       DateTime       @default(now())
+}
+
+model WaterPenalty {
+  id              Int            @id @default(autoincrement())
+  billId          Int            @unique
+  bill            WaterBill      @relation(fields: [billId], references: [id], onDelete: Cascade)
+  amount          Float
+  appliedDate     DateTime       @default(now())
+  type            String         // Fixed, Percentage
+  
+  createdAt       DateTime       @default(now())
 }
