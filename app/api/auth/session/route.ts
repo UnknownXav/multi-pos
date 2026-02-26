@@ -1,20 +1,27 @@
 import { NextRequest, NextResponse } from 'next/server'
-export const dynamic = 'force-dynamic'
 import { verifySession } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
+import { apiHandler, ApiError } from '@/lib/api-utils'
 
+export const dynamic = 'force-dynamic'
+
+/**
+ * GET /api/auth/session
+ * Verify session token and return user data.
+ * Wrapped in apiHandler for centralized error logging.
+ */
 export async function GET(request: NextRequest) {
-  try {
-    const token = request.cookies.get('session')?.value ||
-      request.headers.get('Authorization')?.replace('Bearer ', '')
+  return apiHandler(async (req: NextRequest) => {
+    const token = req.cookies.get('session')?.value ||
+      req.headers.get('Authorization')?.replace('Bearer ', '')
 
     if (!token) {
-      return NextResponse.json({ user: null }, { status: 401 })
+      throw new ApiError('Unauthorized', 401)
     }
 
     const sessionData = await verifySession(token)
     if (!sessionData) {
-      return NextResponse.json({ user: null }, { status: 401 })
+      throw new ApiError('Unauthorized', 401)
     }
 
     // Fetch full user data from database
@@ -24,19 +31,12 @@ export async function GET(request: NextRequest) {
     })
 
     if (!user) {
-      return NextResponse.json({ user: null }, { status: 401 })
+      throw new ApiError('User not found', 404)
     }
 
     return NextResponse.json({
       user,
       success: true
     })
-  } catch (error) {
-    console.error('Session verification error:', error)
-    return NextResponse.json({
-      user: null,
-      success: false,
-      message: 'Failed to verify session'
-    }, { status: 401 })
-  }
+  })(request)
 }
